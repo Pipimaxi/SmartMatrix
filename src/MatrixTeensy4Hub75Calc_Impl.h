@@ -503,16 +503,13 @@ FASTRUN INLINE void SmartMatrixHub75Calc<refreshDepth, matrixWidth, matrixHeight
                 g1 = tempRow1[ind].green;
                 b1 = tempRow1[ind].blue;
 
-                if(optionFlags & SMARTMATRIX_OPTIONS_HUB12_MODE) {
-                    r0 = ~r0;
-                }
-
                 // loop through each bitplane in the current pixel's RGB values and format the bits to match the FlexIO pin configuration
                 uint32_t rgbdata;
                 uint8_t shift = (16 - COLOR_DEPTH_BITS);
                 uint16_t mask = 1 << shift;
 
                 for (int bitindex = 0; bitindex < COLOR_DEPTH_BITS; bitindex++) {
+
                     rgbdata  = (r0 & mask) << (SmartMatrixRefreshT4<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::getFlexPinConfig().r0);
                     rgbdata |= (g0 & mask) << (SmartMatrixRefreshT4<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::getFlexPinConfig().g0);
                     rgbdata |= (b0 & mask) << (SmartMatrixRefreshT4<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::getFlexPinConfig().b0);
@@ -535,11 +532,6 @@ FASTRUN INLINE void SmartMatrixHub75Calc<refreshDepth, matrixWidth, matrixHeight
         }
         // record the address in the first rowAddress field in the rowBitStruct (other rowAddress fields are unused)
         currentRowDataPtr->rowbits[0].rowAddress = currentRow;
-
-        // Applied patch from https://community.pixelmatix.com/t/mapping-assistance-32x16-p10/889/23 not fully integrated (ESP32 only)
-        if(panelType == SM_PANELTYPE_HUB75_16ROW_32COL_MOD4SCAN_V4)
-            currentRowDataPtr->rowbits[0].rowAddress = ~(0x01 << currentRow);
-
         if(MULTI_ROW_REFRESH_REQUIRED) { 
             c += numPixelsPerTempRow; // keep track of cumulative number of pixels filled in refresh buffer before this temp buffer
 

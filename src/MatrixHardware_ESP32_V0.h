@@ -25,8 +25,12 @@
 
 #ifndef MATRIX_HARDWARE_H
 #define MATRIX_HARDWARE_H
+
+#include "hal/gpio_types.h" // added for ESP32-S2
+
+
 // formula used is 80000000L/(cfg->clkspeed_hz + 1), must result in >=2.  Acceptable values 26.67MHz, 20MHz, 16MHz, 13.34MHz...
-#define ESP32_I2S_CLOCK_SPEED (20000000UL)
+#define ESP32_I2S_CLOCK_SPEED (10000000UL)
 
 #define ESP32_FORUM_PINOUT              0
 #define ESP32_FORUM_PINOUT_WITH_LATCH   1
@@ -248,22 +252,22 @@
     15	OE	25	LED Drivers' Output Enable
     16	GND	GND	Ground
     */ 
-    #define R1_PIN  GPIO_NUM_2
-    #define G1_PIN  GPIO_NUM_15
-    #define B1_PIN  GPIO_NUM_4
-    #define R2_PIN  GPIO_NUM_16
-    #define G2_PIN  GPIO_NUM_27
-    #define B2_PIN  GPIO_NUM_17
+    #define R1_PIN  GPIO_NUM_45
+    #define G1_PIN  GPIO_NUM_42
+    #define B1_PIN  GPIO_NUM_41
+    #define R2_PIN  GPIO_NUM_40
+    #define G2_PIN  GPIO_NUM_39
+    #define B2_PIN  GPIO_NUM_38
 
-    #define A_PIN   GPIO_NUM_5
-    #define B_PIN   GPIO_NUM_18
-    #define C_PIN   GPIO_NUM_19
-    #define D_PIN   GPIO_NUM_21
-    #define E_PIN   GPIO_NUM_12
+    #define A_PIN   GPIO_NUM_37
+    #define B_PIN   GPIO_NUM_36
+    #define C_PIN   GPIO_NUM_35
+    #define D_PIN   GPIO_NUM_34
+    #define E_PIN   -1
     #define LAT_PIN GPIO_NUM_26
-    #define OE_PIN  GPIO_NUM_25
+    #define OE_PIN  GPIO_NUM_21
 
-    #define CLK_PIN GPIO_NUM_22
+    #define CLK_PIN GPIO_NUM_33
 
 #elif (GPIOPINOUT == HUB75_ADAPTER_PINOUT)
 

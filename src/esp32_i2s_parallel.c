@@ -27,8 +27,9 @@
 #include "soc/i2s_struct.h"
 #include "soc/i2s_reg.h"
 #include "driver/periph_ctrl.h"
-#include "soc/io_mux_reg.h"
-#include "rom/lldesc.h"
+#include "driver/gpio.h"
+#include "hal/gpio_types.h"
+#include "esp32/rom/lldesc.h" // instead of "rom/lldesc.h"
 #include "esp_heap_caps.h"
 #include "esp32_i2s_parallel.h"
 
@@ -53,7 +54,7 @@ static int i2snum(i2s_dev_t *dev) {
 
 // Todo: handle IS20? (this is hard coded for I2S1 only)
 static void IRAM_ATTR i2s_isr(void* arg) {
-    REG_WRITE(I2S_INT_CLR_REG(1), (REG_READ(I2S_INT_RAW_REG(1)) & 0xffffffc0) | 0x3f);
+    REG_WRITE(I2S_INT_CLR_REG(0), (REG_READ(I2S_INT_RAW_REG(0)) & 0xffffffc0) | 0x3f);
 
     // at this point, the previously active buffer is free, go ahead and write to it
     previousBufferFree = true;
@@ -208,7 +209,8 @@ void i2s_parallel_setup(i2s_dev_t *dev, const i2s_parallel_config_t *cfg) {
         dev->sample_rate_conf.tx_bck_div_num=1; // datasheet says this must be 2 or greater (but 1 seems to work)
     
     dev->clkm_conf.val=0;
-    dev->clkm_conf.clka_en=0;
+	dev->clkm_conf.clk_sel = 2;
+    dev->clkm_conf.clk_en=1;
     dev->clkm_conf.clkm_div_a=63;
     dev->clkm_conf.clkm_div_b=63;
     //We ignore the possibility for fractional division here, clkspeed_hz must round up for a fractional clock speed, must result in >= 2
@@ -258,9 +260,9 @@ void i2s_parallel_setup(i2s_dev_t *dev, const i2s_parallel_config_t *cfg) {
     dev->conf.tx_reset=0; dev->conf.tx_fifo_reset=0; dev->conf.rx_fifo_reset=0;
     
     // setup I2S Interrupt
-    SET_PERI_REG_BITS(I2S_INT_ENA_REG(1), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
+    SET_PERI_REG_BITS(I2S_INT_ENA_REG(0), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
     // allocate a level 1 intterupt: lowest priority, as ISR isn't urgent and may take a long time to complete
-    esp_intr_alloc(ETS_I2S1_INTR_SOURCE, (int)(ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1), i2s_isr, NULL, NULL);
+    esp_intr_alloc(ETS_I2S0_INTR_SOURCE, (int)(ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1), i2s_isr, NULL, NULL);
 
     //Start dma on front buffer
     dev->lc_conf.val=I2S_OUT_DATA_BURST_EN | I2S_OUTDSCR_BURST_EN | I2S_OUT_DATA_BURST_EN;
@@ -275,18 +277,18 @@ void i2s_parallel_setup_without_malloc(i2s_dev_t *dev, const i2s_parallel_config
     printf("Setting up parallel I2S bus at I2S%d\n", i2snum(dev));
     int sig_data_base, sig_clk;
     if (dev==&I2S0) {
-        sig_data_base=I2S0O_DATA_OUT0_IDX;
+        sig_data_base=I2S0O_DATA_OUT8_IDX;
         sig_clk=I2S0O_WS_OUT_IDX;
     } else {
         if (cfg->bits==I2S_PARALLEL_BITS_32) {
-            sig_data_base=I2S1O_DATA_OUT0_IDX;
+            sig_data_base=I2S0O_DATA_OUT0_IDX;
         } else if (cfg->bits==I2S_PARALLEL_BITS_16) {
             //Because of... reasons... the 16-bit values for i2s1 appear on d8...d23
-            sig_data_base=I2S1O_DATA_OUT8_IDX;
+            sig_data_base=I2S0O_DATA_OUT8_IDX;
         } else { // I2S_PARALLEL_BITS_8
-            sig_data_base=I2S1O_DATA_OUT0_IDX;
+            sig_data_base=I2S0O_DATA_OUT0_IDX;
         }
-        sig_clk=I2S1O_WS_OUT_IDX;
+        sig_clk=I2S0O_WS_OUT_IDX;
     }
     
     //Route the signals
@@ -331,12 +333,13 @@ void i2s_parallel_setup_without_malloc(i2s_dev_t *dev, const i2s_parallel_config
         dev->sample_rate_conf.tx_bck_div_num=1; // datasheet says this must be 2 or greater (but 1 seems to work)
     
     dev->clkm_conf.val=0;
-    dev->clkm_conf.clka_en=0;
+	dev->clkm_conf.clk_sel = 2;
+    dev->clkm_conf.clk_en=1;
     dev->clkm_conf.clkm_div_a=63;
     dev->clkm_conf.clkm_div_b=63;
     //We ignore the possibility for fractional division here, clkspeed_hz must round up for a fractional clock speed, must result in >= 2
     dev->clkm_conf.clkm_div_num=80000000L/(cfg->clkspeed_hz + 1);
-
+	
     dev->fifo_conf.val=0;
     dev->fifo_conf.rx_fifo_mod_force_en=1;
     dev->fifo_conf.tx_fifo_mod_force_en=1;
@@ -379,9 +382,9 @@ void i2s_parallel_setup_without_malloc(i2s_dev_t *dev, const i2s_parallel_config
     dev->conf.tx_reset=0; dev->conf.tx_fifo_reset=0; dev->conf.rx_fifo_reset=0;
     
     // setup I2S Interrupt
-    SET_PERI_REG_BITS(I2S_INT_ENA_REG(1), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
+    SET_PERI_REG_BITS(I2S_INT_ENA_REG(0), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
     // allocate a level 1 intterupt: lowest priority, as ISR isn't urgent and may take a long time to complete
-    esp_intr_alloc(ETS_I2S1_INTR_SOURCE, (int)(ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1), i2s_isr, NULL, NULL);
+    esp_intr_alloc(ETS_I2S0_INTR_SOURCE, (int)(ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL1), i2s_isr, NULL, NULL);
 
     //Start dma on front buffer
     dev->lc_conf.val=I2S_OUT_DATA_BURST_EN | I2S_OUTDSCR_BURST_EN | I2S_OUT_DATA_BURST_EN;

@@ -63,27 +63,26 @@
 #define MATRIX_DATA_STORAGE_TYPE uint16_t
 #define CLKS_DURING_LATCH   0
 
-#define R1_PIN  GPIO_NUM_25
-#define G1_PIN  GPIO_NUM_26
-#define B1_PIN  GPIO_NUM_27
-#define R2_PIN  GPIO_NUM_14
-#define G2_PIN  GPIO_NUM_12
-#define B2_PIN  GPIO_NUM_13
+#define R1_PIN  GPIO_NUM_45
+#define G1_PIN  GPIO_NUM_42
+#define B1_PIN  GPIO_NUM_41
+#define R2_PIN  GPIO_NUM_40
+#define G2_PIN  GPIO_NUM_39
+#define B2_PIN  GPIO_NUM_38
 
-#define A_PIN   GPIO_NUM_23
-#define B_PIN   GPIO_NUM_19
-#define C_PIN   GPIO_NUM_5
-#define D_PIN   GPIO_NUM_17
-#define E_PIN   GPIO_NUM_32
+#define A_PIN   GPIO_NUM_37
+#define B_PIN   GPIO_NUM_36
+#define C_PIN   GPIO_NUM_35
+#define D_PIN   GPIO_NUM_34
+#define E_PIN   -1
+#define LAT_PIN GPIO_NUM_26
+#define OE_PIN  GPIO_NUM_21
 
-#define LAT_PIN GPIO_NUM_4
-#define OE_PIN  GPIO_NUM_15
-
-#define CLK_PIN GPIO_NUM_16
+#define CLK_PIN GPIO_NUM_33
 
 //#define DEBUG_PINS_ENABLED
-#define DEBUG_1_GPIO    GPIO_NUM_18
-#define DEBUG_2_GPIO    GPIO_NUM_23
+//#define DEBUG_1_GPIO    GPIO_NUM_18
+//#define DEBUG_2_GPIO    GPIO_NUM_23
 
 #else
     #pragma GCC error "Multiple MatrixHardware*.h files included"

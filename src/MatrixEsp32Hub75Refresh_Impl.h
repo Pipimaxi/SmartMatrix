@@ -39,7 +39,7 @@
 #endif
 
 #include "Esp32MemDisplay.h"
-#include "rom/lldesc.h"
+#include "esp32/rom/lldesc.h" // instead of "rom/lldesc.h"
 
 #define INLINE __attribute__( ( always_inline ) ) inline
 
@@ -85,7 +85,7 @@ typename SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelT
 template <int refreshDepth, int matrixWidth, int matrixHeight, unsigned char panelType, uint32_t optionFlags>
 void SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::writeFrameBuffer(uint8_t currentFrame) {
     //SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::frameStruct * currentFramePtr = SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelType, optionFlags>::getNextFrameBufferPtr();
-    i2s_parallel_flip_to_buffer(&I2S1, cbGetNextWrite(&dmaBuffer));
+    i2s_parallel_flip_to_buffer(&I2S0, cbGetNextWrite(&dmaBuffer));
     cbWrite(&dmaBuffer);
 }
 
@@ -447,7 +447,7 @@ void SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelType,
 #endif
 
     i2s_parallel_config_t cfg={
-        .gpio_bus={R1_PIN, G1_PIN, B1_PIN, R2_PIN, G2_PIN, B2_PIN, LAT_PIN, OE_PIN, A_PIN, B_PIN, C_PIN, D_PIN, E_PIN, -1, -1, -1},
+        .gpio_bus={R1_PIN, G1_PIN, B1_PIN, R2_PIN, G2_PIN, B2_PIN, LAT_PIN, OE_PIN, A_PIN, B_PIN, C_PIN, D_PIN, -1, -1, -1, -1},
         .gpio_clk=CLK_PIN,
         .clk_inversion=(optionFlags & SMARTMATRIX_OPTIONS_ESP32_INVERT_CLK),
         .clkspeed_hz=ESP32_I2S_CLOCK_SPEED,  // formula used is 80000000L/(cfg->clkspeed_hz + 1), must result in >=2.  Acceptable values 26.67MHz, 20MHz, 16MHz, 13.34MHz...
@@ -460,10 +460,11 @@ void SmartMatrixHub75Refresh<refreshDepth, matrixWidth, matrixHeight, panelType,
         dmadesc_b
     };
 
+	printf("Start I2S setup.\n");
     //Setup I2S
-    i2s_parallel_setup_without_malloc(&I2S1, &cfg);
+    i2s_parallel_setup_without_malloc(&I2S0, &cfg);
 
-    //printf("I2S setup done.\n");
+    printf("I2S setup done.\n");
 }
 
 template <int refreshDepth, int matrixWidth, int matrixHeight, unsigned char panelType, uint32_t optionFlags>

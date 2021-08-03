@@ -39,7 +39,7 @@
 #endif
 
 #include "Esp32MemDisplay.h"
-#include "rom/lldesc.h"
+#include "esp32/rom/lldesc.h" // instead of "rom/lldesc.h"
 
 #define INLINE __attribute__( ( always_inline ) ) inline
 
@@ -65,7 +65,7 @@ MATRIX_DATA_STORAGE_TYPE * SmartMatrixHub75Refresh_NT<dummyvar>::getNextFrameBuf
 template <int dummyvar>
 void SmartMatrixHub75Refresh_NT<dummyvar>::writeFrameBuffer(uint8_t currentFrame) {
     //SmartMatrixHub75Refresh_NT<dummyvar>::frameStruct * currentFramePtr = SmartMatrixHub75Refresh_NT<dummyvar>::getNextFrameBufferPtr();
-    i2s_parallel_flip_to_buffer(&I2S1, cbGetNextWrite(&dmaBuffer));
+    i2s_parallel_flip_to_buffer(&I2S0, cbGetNextWrite(&dmaBuffer));
     cbWrite(&dmaBuffer);
 }
 
@@ -453,9 +453,9 @@ void SmartMatrixHub75Refresh_NT<dummyvar>::begin(uint32_t dmaRamToKeepFreeBytes)
     };
 
     //Setup I2S
-    i2s_parallel_setup_without_malloc(&I2S1, &cfg);
+    i2s_parallel_setup_without_malloc(&I2S0, &cfg);
 
-    //printf("I2S setup done.\n");
+    printf("I2S setup done.\n");
 }
 
 template <int dummyvar>
